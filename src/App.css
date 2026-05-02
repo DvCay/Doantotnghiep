@@ -1,0 +1,441 @@
+/* --- Thiết lập Font chữ và biến màu toàn cục (NỀN SÁNG) --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e0e8f0 100%);
+  --card-bg-color: rgba(255, 255, 255, 0.7);
+  --card-border-color: rgba(255, 255, 255, 0.9);
+  --card-shadow-color: rgba(100, 108, 120, 0.1);
+  --text-color: #1a202c; /* Đen đậm */
+  --text-color-light: #4a5568; /* Xám đậm */
+  --text-color-lighter: #718096; /* Xám nhạt */
+  --color-normal: #28a745;
+  --color-normal-bg: rgba(40, 167, 69, 0.1);
+  --color-warning: #ffc107;
+  --color-warning-bg: rgba(255, 193, 7, 0.1);
+  --color-danger: #dc3545;
+  --color-danger-bg: rgba(220, 53, 69, 0.15);
+  --color-bpm: #ff4d6d;
+  --color-spo2: #00b4d8;
+  --color-temp: #ff9f1c;
+}
+
+/* --- Reset và thiết lập cơ bản cho body --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-color);
+  min-height: 100vh;
+  padding: 2rem;
+  overflow-x: hidden; /* Tránh cuộn ngang */
+
+  /* === 🎨 SỬA LỖI CĂN GIỮA (LẦN 4) === */
+  /* Ghi đè (override) các style xung đột từ index.css */
+  display: block; /* Trả body về trạng thái block bình thường */
+  place-items: normal; /* Xóa bỏ 'center' */
+}
+
+/* === 🎨 SỬA LỖI CĂN GIỮA (BỔ SUNG) === */
+/* Xóa các quy tắc cũ cho #root */
+#root {
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: flex-start; */
+  width: 100%; /* Đảm bảo #root chiếm toàn bộ chiều rộng */
+}
+
+
+/* --- Nền EKG mờ (MỚI) --- */
+.ekg-background-line {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 300px;
+  transform: translateY(-50%);
+  background-image: url("data:image/svg+xml,%3Csvg width='600' height='300' viewBox='0 0 600 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 150 H100 L110 120 L120 150 L130 180 L140 150 H180 L185 140 L190 160 L195 150 H250 L255 145 L260 155 L265 150 H300 Q310 150 315 130 T330 150 H400 L410 120 L420 150 L430 180 L440 150 H480 L485 140 L490 160 L495 150 H550 L555 145 L560 155 L565 150 H600' fill='none' stroke='rgba(220, 220, 230, 0.5)' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: 0 0;
+  z-index: 0;
+  opacity: 0.7;
+  animation: slideEKG 10s linear infinite;
+}
+
+@keyframes slideEKG {
+  from { background-position-x: 0; }
+  to { background-position-x: -600px; }
+}
+
+/* --- Thẻ "Glass" tái sử dụng (MỚI) --- */
+.glass-card {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--card-border-color);
+  border-radius: 20px;
+  box-shadow: 0 5px 15px var(--card-shadow-color);
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px var(--card-shadow-color);
+}
+
+/* --- Layout chính của Dashboard (CẬP NHẬT) --- */
+.dashboard-layout {
+  position: relative;
+  z-index: 1;
+  width: 100%; /* 🎨 Thêm width 100% để đảm bảo nó lấp đầy #root */
+}
+
+.dashboard-container {
+  width: 100%;
+  max-width: 1400px; /* Rộng hơn cho layout mới */
+  
+  /* === 🎨 SỬA LỖI CĂN GIỮA (LẦN 3) === */
+  /* Áp dụng margin auto để căn giữa .dashboard-container (có max-width) */
+  margin-left: auto;
+  margin-right: auto;
+  
+  display: grid;
+  grid-template-columns: 1fr; /* Mặc định 1 cột */
+  gap: 2rem;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Layout 2 cột cho màn hình lớn */
+@media (min-width: 1024px) {
+  .dashboard-container {
+    grid-template-columns: 2.5fr 1fr; /* Cột chính 2.5 phần, sidebar 1 phần */
+  }
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Header mới (MỚI) --- */
+.main-header-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+/* === 🎨 SỬA LỖI CĂN LỀ HEADER === */
+@media (min-width: 768px) {
+  .main-header-overview {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left; /* Căn chữ về bên trái */
+  }
+}
+
+.overview-subtitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-color-light);
+  letter-spacing: 0.5px;
+}
+
+.overview-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-top: -0.5rem;
+}
+
+/* --- Vòng tròn nhịp tim (MỚI) --- */
+.heart-rate-circle-container {
+  flex-shrink: 0;
+}
+
+.heart-rate-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255, 77, 109, 0.1) 60%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 0 10px rgba(255, 77, 109, 0.2);
+  animation: pulseHeart 1.5s infinite;
+}
+
+.heart-rate-inner-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--color-bpm);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heart-rate-inner-circle svg {
+  width: 50px;
+  height: 50px;
+}
+
+@keyframes pulseHeart {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 77, 109, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); }
+}
+
+/* --- Lưới chứa các card thông số (CẬP NHẬT) --- */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --- Kiểu dáng chung cho mỗi Card (CẬP NHẬT) --- */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.header-text {
+  flex-grow: 1;
+}
+
+.card-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.25rem;
+}
+
+.card-header .sensor-name {
+  font-size: 0.85rem;
+  color: var(--text-color-lighter);
+  display: block;
+}
+
+/* --- Icon (MỚI) --- */
+.metric-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+}
+.metric-card.status-normal .metric-icon { color: var(--color-normal); background-color: var(--color-normal-bg); }
+.metric-card.status-warning .metric-icon { color: var(--color-warning); background-color: var(--color-warning-bg); }
+.metric-card.status-danger .metric-icon { color: var(--color-danger); background-color: var(--color-danger-bg); }
+
+/* Ghi đè màu icon mặc định (khi chưa có status) */
+.metric-card:nth-of-type(1) .metric-icon { color: var(--color-bpm); background-color: rgba(255, 77, 109, 0.1); }
+.metric-card:nth-of-type(2) .metric-icon { color: var(--color-spo2); background-color: rgba(0, 180, 216, 0.1); }
+.metric-card:nth-of-type(3) .metric-icon { color: var(--color-temp); background-color: rgba(255, 159, 28, 0.1); }
+
+
+.card-body {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
+.metric-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  line-height: 1;
+  transition: color 0.5s ease;
+}
+
+.unit {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text-color-light);
+  margin-left: 0.5rem;
+}
+
+/* --- Footer của card và chỉ báo trạng thái (CẬP NHẬT) --- */
+.card-footer {
+  text-align: left;
+  margin-top: auto;
+}
+
+.status-indicator {
+  padding: 0.4rem 1rem;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  display: inline-block;
+}
+
+/* --- Các lớp màu sắc cho trạng thái (CẬP NHẬT) --- */
+.status-normal .status-indicator {
+  background-color: var(--color-normal-bg);
+  color: var(--color-normal);
+}
+.status-normal .metric-value {
+  color: var(--color-normal);
+}
+
+.status-warning .status-indicator {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+.status-warning .metric-value {
+  color: var(--color-warning);
+}
+
+.status-danger .status-indicator {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  animation: pulseRed 1.5s infinite;
+}
+.status-danger .metric-value {
+  color: var(--color-danger);
+}
+
+@keyframes pulseRed {
+  0%, 100% { background-color: rgba(220, 53, 69, 0.15); }
+  50% { background-color: rgba(220, 53, 69, 0.3); }
+}
+
+
+/* --- Phần biểu đồ (CẬP NHẬT) --- */
+.chart-section {
+  height: 400px;
+  width: 100%;
+}
+
+/* --- Sidebar Widgets (MỚI) --- */
+.widget-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+/* Thẻ trạng thái kết nối */
+.connection-status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.status-bubble {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+.status-bubble.status-normal {
+  background-color: var(--color-normal-bg);
+  color: var(--color-normal);
+}
+.status-bubble.status-danger {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  animation: pulseRed 1.5s infinite;
+}
+
+/* Thẻ lịch */
+.calendar-widget {
+  padding: 1rem;
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+.calendar-nav button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color);
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+.calendar-dow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-color-light);
+}
+.calendar-day {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.calendar-day.other-month {
+  color: var(--text-color-lighter);
+  opacity: 0.6;
+}
+.calendar-day.today {
+  background-color: var(--color-bpm);
+  color: white;
+  font-weight: 700;
+}
+.calendar-day.has-data {
+  border: 2px solid var(--color-spo2);
+}
+.calendar-day:not(.today):not(.other-month):hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+
+/* Tối ưu hiển thị trên điện thoại nhỏ */
+@media (max-width: 480px) {
+  body { padding: 1rem; }
+  .dashboard-container { padding: 0.5rem; }
+  .main-header-overview { text-align: center; }
+  .overview-title { font-size: 1.8rem; }
+  .metric-value { font-size: 2.8rem; }
+  .chart-section { height: 250px; }
+  .glass-card { padding: 1rem; }
+}
+

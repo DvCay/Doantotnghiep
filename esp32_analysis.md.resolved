@@ -1,0 +1,87 @@
+# Phân Tích Code ESP32 - Hệ Thống Theo Dõi Sức Khỏe
+
+Tài liệu này giải thích chi tiết về mã nguồn firmware cho thiết bị theo dõi sức khỏe sử dụng ESP32, cảm biến MAX30105 (đo SpO2/Nhịp tim) và Dallas DS18B20 (đo nhiệt độ).
+
+## 1. Tổng Quan Hệ Thống
+
+Thiết bị có các chức năng chính:
+*   **Đo sinh hiệu**: Nhịp tim (BPM), Nồng độ oxy trong máu (SpO2), Nhiệt độ cơ thể.
+*   **Hiển thị tại chỗ**: Màn hình OLED SSD1306 hiển thị thông số và vẽ biểu đồ sóng PPG (Photoplethysmogram).
+*   **Kết nối không mạng**:
+    *   **Wi-Fi**: Kết nối vào mạng (SSID: `Dvc`).
+    *   **WebSocket**: Gửi dữ liệu JSON realtime tới giao diện Web.
+    *   **Serial**: Gửi dữ liệu dạng CSV qua cổng USB (cho ứng dụng WinForm).
+
+## 2. Các Thư Viện Sử Dụng
+
+*   `<WiFi.h>, <AsyncTCP.h>, <ESPAsyncWebServer.h>`: Quản lý kết nối Wi-Fi và tạo Web Server/WebSocket không đồng bộ (Async) để không làm chặn luồng xử lý chính của chip.
+*   `"MAX30105.h"`: Thư viện giao tiếp với cảm biến nhịp tim/SpO2 (thực tế code đang dùng cho MAX30102 nhưng thư viện này tương thích).
+*   `<OneWire.h>, <DallasTemperature.h>`: Giao tiếp với cảm biến nhiệt độ DS18B20.
+*   `<Adafruit_GFX.h>, <Adafruit_SSD1306.h>`: Điều khiển màn hình hiển thị OLED.
+
+## 3. Cấu Trúc Code
+
+### 3.1. Cấu Hình & Biến Toàn Cục
+
+*   **Wi-Fi**: `ssid` và `password` được hardcode. Cơ chế tự động kết nối lại (`handleWiFiReconnection`) đảm bảo kết nối ổn định.
+*   **Cảm biến**:
+    *   `ONE_WIRE_BUS 4`: Chân data cảm biến nhiệt độ.
+    *   `MAX30105 particleSensor`: Đối tượng điều khiển cảm biến MAX30105.
+*   **Thuật toán SpO2/HR**:
+    *   `BUFFER_SIZE 100`: Dùng bộ đệm 100 mẫu để tính SpO2.
+    *   `bandpassFilter`: Bộ lọc thông dải để loại bỏ nhiễu DC (tĩnh) và nhiễu tần số cao, giữ lại tín hiệu nhịp tim.
+    *   `filteredSignal`: Tín hiệu sau khi lọc dùng để vẽ sóng và phát hiện đỉnh.
+
+### 3.2. Hàm `setup()`
+
+1.  **Giao tiếp**: Khởi động Serial 115200 baud, I2C bus (400kHz).
+2.  **IO**: Cấu hình LED báo trạng thái và Còi chíp (Buzzer).
+3.  **Màn hình**: Khởi động OLED, hiển thị "SYSTEM START".
+4.  **Kết nối**: Gọi `setupWiFiBoot()` để kết nối Wi-Fi ban đầu.
+5.  **Cảm biến**: Khởi động MAX30102 và DS18B20.
+6.  **Server**: Thiết lập WebSocket tại đường dẫn `/ws` và khởi chạy server.
+
+### 3.3. Hàm `loop()` (Vòng lặp chính)
+
+Đây là "trái tim" của chương trình, hoạt động liên tục:
+
+1.  **Quản lý Wi-Fi**: Kiểm tra và kết nối lại nếu rớt mạng.
+2.  **Nút nhấn**: Chuyển đổi chế độ hiển thị OLED giữa "Hiển thị số" và "Vẽ sóng" (`showWave`).
+3.  **Đọc cảm biến MAX30105**:
+    *   Đọc giá trị Hồng ngoại (IR) và Đỏ (Red).
+    *   Nếu phát hiện có tay đặt vào (`rawIR > FINGER_THRESHOLD`):
+        *   **Lọc tín hiệu**: Dùng `bandpassFilter`.
+        *   **Phát hiện nhịp tim**: Sử dụng thuật toán so sánh ngưỡng động (Dynamic Threshold) dựa trên độ lệch chuẩn (Standard Deviation). Nếu tín hiệu vượt ngưỡng và là đỉnh cực đại cục bộ -> Ghi nhận nhịp.
+        *   **Tính SpO2**: Lưu dữ liệu vào `rawRedBuffer`/`rawIRBuffer`. Khi đủ 100 mẫu, gọi `calculateSpO2_Custom`.
+4.  **Gửi dữ liệu**:
+    *   **Serial**: Gửi chuỗi CSV `t_us, IR, Red, Vt, BPM, SpO2` để vẽ đồ thị trên máy tính.
+    *   **WebSocket**: Mỗi 500ms (`sendDataToWeb`), gửi gói JSON `{"bpm":..., "spo2":..., "temp":..., "ir":...}` lên web.
+    *   **OLED**: Mỗi 30ms gọi `updateOLED()` để làm mới màn hình (đảm bảo mượt mà 30FPS).
+
+### 3.4. Các Hàm Quan Trọng
+
+#### `bandpassFilter(float input)`
+Bộ lọc số (Digital Filter) giúp tách tín hiệu nhịp tim dao động yếu (AC) ra khỏi tín hiệu tĩnh mạnh (DC). Code sử dụng bộ lọc IIR đơn giản.
+
+#### `calculateSpO2_Custom()`
+*   Tìm giá trị Min/Max trong cửa sổ 100 mẫu của cả tia Đỏ (Red) và Hồng ngoại (IR).
+*   Tính thành phần xoay chiều (AC) = Max - Min.
+*   Tính thành phần một chiều (DC) = Min.
+*   Tính tỷ lệ $R = (AC_{Red}/DC_{Red}) / (AC_{IR}/DC_{IR})$.
+*   Áp dụng công thức thực nghiệm: $SpO2 = -45.060*R^2 + 30.354*R + 94.845$.
+
+#### `updateOLED()`
+*   **Chế độ số**: Hiển thị to, rõ BPM, SpO2, Nhiệt độ và trạng thái Wi-Fi.
+*   **Chế độ sóng**: Vẽ đường đồ thị theo thời gian thực (như máy điện tim). Tự động điều chỉnh tỉ lệ (`targetScale`) để sóng luôn vừa vặn trong màn hình (Auto Zoom).
+
+#### `sendDataToWeb()`
+Đóng gói dữ liệu thành JSON string và gửi broadcast cho tất cả client đang kết nối vào WebSocket.
+
+## 4. Lưu Ý Khi Sử Dụng
+
+1.  **Nhiễu ánh sáng**: Cảm biến quang học rất nhạy với ánh sáng môi trường. Nên che chắn kỹ khi đo.
+2.  **Ổn định**: Thuật toán phát hiện đỉnh tim yêu cầu tay giữ yên. Chuyển động mạnh sẽ gây sai số (Motion Artifact).
+3.  **ADC ESP32**: Code này sử dụng ADC tích hợp hoặc ngoại vi của MAX30105. Lưu ý `ADC_MAX 262143.0f` ở đây là độ phân giải của MAX30105 (18-bit), không phải của ESP32 (12-bit).
+
+---
+*Tài liệu được tạo tự động bởi trợ lý AI Antigravity*
