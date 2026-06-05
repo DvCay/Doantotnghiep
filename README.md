@@ -1,16 +1,80 @@
-# React + Vite
+# Hệ Thống Giám Sát Sức Khỏe ESP32
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Dự án gồm 3 phần chính:
 
-Currently, two official plugins are available:
+- Firmware ESP32: đọc cảm biến MAX30102/MAX30105, DS18B20, hiển thị OLED, gửi dữ liệu lên Firebase Firestore và Serial.
+- Web React/Vite: lắng nghe dữ liệu realtime từ Firestore, hiển thị dashboard, biểu đồ, lịch sử và xuất Excel.
+- Ứng dụng WinForms: nhận dữ liệu CSV qua cổng COM để hiển thị BPM, SpO2 và sóng PPG.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Luồng Dữ Liệu
 
-## React Compiler
+```text
+MAX30102 + DS18B20
+        |
+        v
+ESP32 doantotnghiep.ino
+        |
+        |-- Serial CSV --> WinForms
+        |
+        |-- Firestore realtime_data/esp32_sensor --> Web React
+                                                       |
+                                                       v
+                                         Lưu lịch sử artifacts/.../health_data
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Chạy Web
 
-## Expanding the ESLint configuration
+```powershell
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Build để deploy:
+
+```powershell
+npm run build
+```
+
+Thư mục build:
+
+```text
+dist/
+```
+
+## Firmware ESP32
+
+File firmware:
+
+```text
+src/doantotnghiep.ino
+```
+
+WiFi đang cấu hình cố định trong file:
+
+```cpp
+const char* WIFI_SSID = "Dvc";
+const char* WIFI_PASS = "99999999";
+```
+
+Dữ liệu realtime gửi lên Firestore document:
+
+```text
+realtime_data/esp32_sensor
+```
+
+Dữ liệu Serial gửi cho WinForms theo format:
+
+```text
+t_us,IR,Red,Vt,BPM,SpO2
+```
+
+## Công Nghệ Sử Dụng
+
+- ESP32 Arduino
+- MAX30102/MAX30105
+- DS18B20
+- OLED SSD1306
+- Firebase Firestore
+- React + Vite
+- Chart.js
+- xlsx-js-style

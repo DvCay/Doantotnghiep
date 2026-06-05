@@ -1,32 +1,54 @@
-# Cấu hình Firestore Security Rules
+# Cấu Hình Firestore Security Rules
 
-## Lỗi hiện tại
-```
-❌ Lỗi lưu Firestore: FirebaseError: Missing or insufficient permissions.
+Dự án hiện tại dùng 2 nhóm dữ liệu Firestore.
+
+## 1. Dữ Liệu Realtime Từ ESP32
+
+ESP32 cập nhật liên tục document:
+
+```text
+realtime_data/esp32_sensor
 ```
 
-## Nguyên nhân
-Firestore Security Rules mặc định chặn tất cả các request ghi dữ liệu từ client. Cần cấu hình rules để cho phép ứng dụng lưu dữ liệu.
+Document này có các field:
 
-## Path đang sử dụng
+```text
+bpm    number
+spo2   number
+temp   number
+uptime number
 ```
+
+Web React đọc document này bằng `onSnapshot()` để hiển thị dữ liệu realtime.
+
+## 2. Dữ Liệu Lịch Sử Của Web
+
+Khi người dùng bắt đầu đo, web lưu lịch sử tại:
+
+```text
 artifacts/web-monitor/users/{userId}/health_data/{docId}
 ```
 
-Trong đó:
-- `userId`: Anonymous User ID từ Firebase Auth (ví dụ: `C4mRjE1CjETHnBuZbOHkRHeQf313`)
-- `docId`: Document ID theo format ngày (ví dụ: `2025-12-16`)
+Mỗi document lịch sử có field:
 
-## Cách sửa
+```text
+records: [
+  {
+    timestamp,
+    bpm,
+    spo2,
+    temp,
+    patientName,
+    patientAge,
+    patientGender
+  }
+]
+```
 
-### Bước 1: Mở Firebase Console
-1. Vào https://console.firebase.google.com
-2. Chọn project của bạn
-3. Vào **Firestore Database** → **Rules**
+## Rules Dùng Để Test Nhanh
 
-### Bước 2: Cập nhật Security Rules
+Chỉ nên dùng khi demo nội bộ hoặc debug:
 
-**Option 1: Cho phép tất cả (chỉ dùng để test)** ⚠️
 ```javascript
 rules_version = '2';
 service cloud.firestore {
@@ -38,50 +60,60 @@ service cloud.firestore {
 }
 ```
 
-**Option 2: Chỉ cho phép user đã đăng nhập (khuyến nghị)** ✅
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Cho phép user đã đăng nhập (kể cả anonymous) đọc/ghi dữ liệu của chính họ
-    match /artifacts/{appId}/users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
+Rules này tiện cho thử nghiệm, nhưng không an toàn khi public.
 
-**Option 3: Giới hạn chỉ cho phép ghi vào health_data (an toàn nhất)** 🔒
+## Rules Khuyến Nghị Cho Dự Án
+
+Rules này cho phép:
+
+- ESP32 ghi document realtime.
+- Web đọc document realtime.
+- User đã đăng nhập anonymous đọc/ghi lịch sử của chính user đó.
+
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Chỉ cho phép user đã đăng nhập ghi vào health_data của chính họ
+
+    match /realtime_data/esp32_sensor {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasAll(['bpm', 'spo2', 'temp', 'uptime'])
+                   && request.resource.data.bpm is number
+                   && request.resource.data.spo2 is number
+                   && request.resource.data.temp is number
+                   && request.resource.data.uptime is number;
+    }
+
     match /artifacts/{appId}/users/{userId}/health_data/{docId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null 
-                   && request.auth.uid == userId
-                   && request.resource.data.keys().hasAll(['timestamp', 'bpm', 'spo2', 'temp']);
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
     }
   }
 }
 ```
 
-### Bước 3: Publish Rules
-1. Nhấn **Publish** để áp dụng rules mới
-2. Đợi vài giây để Firebase cập nhật
-3. Test lại ứng dụng
+## Ghi Chú Bảo Mật
 
-## Kiểm tra
-Sau khi cập nhật rules, bạn sẽ thấy trong console:
-- ✅ `💾 Đang lưu: BPM=XX, SpO2=YY, Temp=ZZ`
-- ✅ `✅ Lưu thành công!`
+Firmware ESP32 hiện đang dùng Firebase test mode:
 
-Thay vì:
-- ❌ `❌ Lỗi lưu Firestore: FirebaseError: Missing or insufficient permissions.`
+```cpp
+config.signer.test_mode = true;
+```
 
-## Lưu ý
-- **Option 1** không an toàn, chỉ dùng để test
-- **Option 2** khuyến nghị cho môi trường development
-- **Option 3** khuyến nghị cho môi trường production
-- Sau khi deploy production, nên sử dụng Option 3 để bảo mật tốt nhất
+Vì vậy ESP32 không đăng nhập bằng user Firebase thông thường. Nếu cần bảo mật hơn khi triển khai thật, nên chuyển sang cơ chế xác thực riêng cho thiết bị hoặc dùng backend trung gian.
+
+## Cách Kiểm Tra
+
+Sau khi nạp firmware và mở web, vào Firestore kiểm tra:
+
+```text
+realtime_data/esp32_sensor
+```
+
+Nếu ESP32 online, các field `bpm`, `spo2`, `temp`, `uptime` sẽ được cập nhật liên tục.
+
+Khi web bắt đầu đo và có user anonymous, lịch sử sẽ được lưu tại:
+
+```text
+artifacts/web-monitor/users/{userId}/health_data/{YYYYMMDD}
+```

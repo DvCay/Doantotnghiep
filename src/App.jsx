@@ -20,7 +20,8 @@ import {
   setDoc,
   getDoc,
   arrayUnion,
-  Timestamp
+  Timestamp,
+  onSnapshot
 } from "firebase/firestore";
 
 // Đăng ký các thành phần ChartJS
@@ -1283,7 +1284,13 @@ const HeartRateCircle = ({ bpm = 60 }) => {
 const Calendar = ({ selectedDate, onDateSelect }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth()));
   const today = new Date();
-  const getDocId = (date) => date.toISOString().split('T')[0];
+  const getDocId = (date) => {
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
   const todayStr = getDocId(today);
   const selectedStr = getDocId(selectedDate);
 
@@ -1291,7 +1298,7 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
     const days = [];
     const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
     const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-    const startDayOfWeek = startDate.getDay();
+    const startDayOfWeek = (startDate.getDay() + 6) % 7;
     for (let i = startDayOfWeek; i > 0; i--) {
       const date = new Date(startDate);
       date.setDate(date.getDate() - i);
@@ -1301,7 +1308,7 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
       const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
       days.push({ date, isCurrentMonth: true });
     }
-    const endDayOfWeek = endDate.getDay();
+    const endDayOfWeek = (endDate.getDay() + 6) % 7;
     for (let i = 1; i < 7 - endDayOfWeek; i++) {
       const date = new Date(endDate);
       date.setDate(date.getDate() + i);
@@ -1833,10 +1840,10 @@ function App() {
     };
   }, []);
 
-  // === Count-up cho hiển thị giá trị ===
-  const bpmDisplay = useCountUp(bpm > 0 ? bpm : 0);
-  const spo2Display = useCountUp(spo2 > 0 ? spo2 : 0);
-  const tempDisplay = useCountUp(temperature > 0 ? temperature : 0);
+  // === Bỏ Count-up để hiển thị ngay lập tức (Real-time căng nhất) ===
+  const bpmDisplay = bpm > 0 ? bpm : 0;
+  const spo2Display = spo2 > 0 ? spo2 : 0;
+  const tempDisplay = temperature > 0 ? temperature : 0;
 
   // === STATE MỚI CHO LỊCH SỬ & FIREBASE ===
   const [userId, setUserId] = useState(null);
@@ -2063,111 +2070,88 @@ function App() {
     });
   };
 
-  // === 10. EFFECT: KẾT NỐI WEBSOCKET (REAL-TIME) ===
+  // === 10. EFFECT: KẾT NỐI FIREBASE (REAL-TIME THAY CHO WEBSOCKET) ===
   useEffect(() => {
-    const esp32_ip = "10.16.56.130";
-    let ws;
+    // Chắc chắn firebase đã sẵn sàng
+    if (!db) return;
 
-    const connectWebSocket = () => {
-      let wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-      // (🎨 ĐÃ SỬA: Sửa lại điều kiện để luôn dùng WSS trên HTTPS)
-      if (window.location.hostname === 'localhost' && window.location.protocol !== 'https:') {
-        wsProtocol = 'ws://';
-      }
-      console.log(`Đang kết nối WebSocket với: ${wsProtocol}${esp32_ip}/ws`);
-      ws = new WebSocket(`${wsProtocol}${esp32_ip}/ws`);
+    setConnectionStatus('Đang chờ dữ liệu từ Firebase...');
+    
+    // Trỏ tới đúng Document mà ESP32 vừa nạp lên
+    const docRef = doc(db, 'realtime_data', 'esp32_sensor');
+    
+    let offlineTimeoutId;
 
-      ws.onopen = () => {
-        console.log("✅ Kết nối WebSocket thành công!");
-        setConnectionStatus('Đã kết nối');
-        // mark last message time when connection opens
-        lastMessageTsRef.current = Date.now();
-      };
+    // Mở luồng lắng nghe thời gian thực của Firebase
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
+        let newBpm = Number(data.bpm) || 0;
+        let newSpo2 = Number(data.spo2) || 0;
+        let newTemp = Number(data.temp) || 0;
+        let uptime = Number(data.uptime) || 0;
 
-          // Sanitize data: treat invalid/negative numbers as 0
-          let newBpm = Number(data.bpm);
-          let newSpo2 = Number(data.spo2);
-          let newTemp = Number(data.temp);
+        // Xóa bộ đếm ngược mất kết nối mỗi khi Firebase có tín hiệu cập nhật
+        clearTimeout(offlineTimeoutId);
 
-          if (isNaN(newBpm) || newBpm < 0) newBpm = 0;
-          if (isNaN(newSpo2) || newSpo2 < 0) newSpo2 = 0;
-          if (isNaN(newTemp) || newTemp < 0) newTemp = 0;
-          // update last-received timestamp
-          lastMessageTsRef.current = Date.now();
-          if (connectionStatus !== 'Đã kết nối') {
-            setConnectionStatus('Đã kết nối');
-          }
-
-          // Lưu nếu có ít nhất 1 trong 3 giá trị > 0
-          if (isCanvasEnvironment && (newBpm > 0 || newSpo2 > 0 || newTemp > 0)) {
-            dataBufferRef.current.push({ bpm: newBpm, spo2: newSpo2, temp: newTemp });
-            // LƯU NGAY (throttled 10s)
-            if (saveToFirestoreRef.current) {
-              saveToFirestoreRef.current(newBpm, newSpo2, newTemp);
-            }
-          }
-
+        // Kích hoạt lại bộ đếm: Sau 5 giây nếu Firebase không có dữ liệu mới -> rớt mạng
+        offlineTimeoutId = setTimeout(() => {
+          setConnectionStatus('Thiết bị ESP32 đang tắt/Mất mạng!');
           if (viewMode === 'live') {
-            setBpm(newBpm);
-            setSpo2(newSpo2);
-            setTemperature(newTemp);
-
-            bpmRef.current = newBpm;
-            lastLiveBpmRef.current = newBpm;
-            lastLiveSpo2Ref.current = newSpo2;
-            lastLiveTempRef.current = newTemp;
-
-            // Set target SpO2 for smooth interpolation
-            if (newSpo2 > 0) {
-              targetSpo2Ref.current = newSpo2;
-              // Khởi tạo smoothSpo2 lần đầu
-              if (smoothSpo2Ref.current === 0) smoothSpo2Ref.current = newSpo2;
-            }
-            
-            // Set target Temp for smooth interpolation
-            if (newTemp > 0) {
-              targetTempRef.current = newTemp;
-              // Khởi tạo smoothTemp lần đầu
-              if (smoothTempRef.current === 0) smoothTempRef.current = newTemp;
-            }
+            setBpm(0);
+            setSpo2(0);
+            setTemperature(0);
           }
+        }, 5000);
 
-        } catch (err) {
-          console.error("❌ Lỗi JSON:", err);
+        lastMessageTsRef.current = Date.now();
+        setConnectionStatus('Đã kết nối ESP32 (Online)');
+
+        // Lưu buffer lưu trữ lịch sử
+        if (isCanvasEnvironment && (newBpm > 0 || newSpo2 > 0 || newTemp > 0)) {
+          dataBufferRef.current.push({ bpm: newBpm, spo2: newSpo2, temp: newTemp });
+          if (saveToFirestoreRef.current) {
+            saveToFirestoreRef.current(newBpm, newSpo2, newTemp);
+          }
         }
-      };
 
-      ws.onclose = () => {
-        setConnectionStatus('Mất kết nối... Thử lại sau 5s');
-        console.warn("⚠️ WebSocket đóng, thử lại sau...");
-        setTimeout(connectWebSocket, 5000);
-      };
+        // Đẩy số liệu ra giao diện nếu đang ở Live View
+        if (viewMode === 'live') {
+          setBpm(newBpm);
+          setSpo2(newSpo2);
+          setTemperature(newTemp);
 
-      ws.onerror = (err) => {
-        console.error("❌ Lỗi WebSocket:", err);
-        // (🎨 ĐÃ SỬA: Sửa lại logic fallback, chỉ fallback nếu WSS lỗi)
-        if (wsProtocol === 'wss://') {
-          console.warn("WSS thất bại, thử lại với WS (có thể do ESP32 không hỗ trợ WSS hoặc chứng chỉ không hợp lệ)...");
-          wsProtocol = 'ws://';
-          // Không nên gọi lại connect ngay, vì nếu lỗi do mạng thì sẽ bị lặp vô hạn.
-          // Để onclose xử lý việc kết nối lại.
-          setConnectionStatus('Lỗi WSS, thử WS...');
-        } else {
-          setConnectionStatus('Lỗi WS: Không thể kết nối. (Kiểm tra IP/Firewall)');
+          bpmRef.current = newBpm;
+          lastLiveBpmRef.current = newBpm;
+          lastLiveSpo2Ref.current = newSpo2;
+          lastLiveTempRef.current = newTemp;
+
+          if (newSpo2 > 0) {
+            targetSpo2Ref.current = newSpo2;
+            if (smoothSpo2Ref.current === 0) smoothSpo2Ref.current = newSpo2;
+          } else {
+            targetSpo2Ref.current = 0;
+          }
+          
+          if (newTemp > 0) {
+            targetTempRef.current = newTemp;
+            if (smoothTempRef.current === 0) smoothTempRef.current = newTemp;
+          } else {
+            targetTempRef.current = 0;
+          }
         }
-      };
-    };
-
-    connectWebSocket();
-    return () => {
-      if (ws) {
-        console.log("🔌 Đóng WebSocket connection");
-        ws.close();
+      } else {
+        setConnectionStatus('Chưa có dữ liệu cảm biến mới');
       }
+    }, (error) => {
+      console.error("Lỗi nhận Firebase Realtime:", error);
+      setConnectionStatus('Mất kết nối với Firebase');
+    });
+
+    // Cleanup: Ngắt kết nối Firebase khi chuyển giao diện
+    return () => {
+      unsubscribe();
     };
   }, [viewMode]); // 🔧 Chỉ reconnect khi viewMode thay đổi, dùng ref cho saveToFirestore
 
@@ -2311,14 +2295,19 @@ function App() {
       const noise = (Math.random() - 0.5) * 0.15;
 
       // 4. Final value
-      const finalSpo2 = smoothSpo2Ref.current + respiratoryVariation + noise;
-      const clampedSpo2 = Math.max(80, Math.min(100, finalSpo2));
+      let pushedValue = null;
+      if (target > 0) {
+        const finalSpo2 = smoothSpo2Ref.current + respiratoryVariation + noise;
+        pushedValue = Math.max(80, Math.min(100, finalSpo2));
+      } else {
+        smoothSpo2Ref.current = 0;
+      }
 
       // 5. Update chart
       setSpo2ChartData(prev => {
         const data = [...(prev.datasets[0]?.data || Array(280).fill(null))];
         data.shift();
-        data.push(clampedSpo2);
+        data.push(pushedValue);
         return { 
           ...prev, 
           datasets: [{ ...prev.datasets[0], data }]
@@ -2366,14 +2355,19 @@ function App() {
       const circadianEffect = 0.08 * Math.sin(time * 0.0001);
 
       // 5. Final value
-      const finalTemp = smoothTempRef.current + thermalVariation + noise + circadianEffect;
-      const clampedTemp = Math.max(30, Math.min(45, finalTemp));
+      let pushedValue = null;
+      if (target > 0) {
+        const finalTemp = smoothTempRef.current + thermalVariation + noise + circadianEffect;
+        pushedValue = Math.max(30, Math.min(45, finalTemp));
+      } else {
+        smoothTempRef.current = 0;
+      }
 
       // 6. Update chart
       setTempChartData(prev => {
         const data = [...(prev.datasets[0]?.data || Array(280).fill(null))];
         data.shift();
-        data.push(clampedTemp);
+        data.push(pushedValue);
         return { 
           ...prev, 
           datasets: [{ ...prev.datasets[0], data }]
