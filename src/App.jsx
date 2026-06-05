@@ -1204,6 +1204,520 @@ const GlobalStyles = () => (
       .toast { top: 12px; min-width: auto; width: calc(100% - 24px); }
     }
 
+    /* === UI polish overrides: dashboard y te gon va chuyen nghiep hon === */
+    :root {
+      --bg-gradient: linear-gradient(180deg, #f6f9fc 0%, #edf3f8 100%);
+      --card-bg-color: rgba(255, 255, 255, 0.94);
+      --card-border-color: #dfe8f1;
+      --card-shadow-color: rgba(17, 24, 39, 0.08);
+      --hover-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+      --text-color: #172033;
+      --text-color-light: #475569;
+      --text-color-lighter: #7b8aa0;
+      --color-normal: #16a34a;
+      --color-normal-bg: #dcfce7;
+      --color-warning: #d97706;
+      --color-warning-bg: #fef3c7;
+      --color-danger: #e11d48;
+      --color-danger-bg: #ffe4e6;
+      --color-bpm: #f43f5e;
+      --color-spo2: #0284c7;
+      --color-temp: #f59e0b;
+    }
+
+    body {
+      padding: 1.25rem;
+      background:
+        linear-gradient(90deg, rgba(2,132,199,0.04) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(2,132,199,0.04) 1px, transparent 1px),
+        var(--bg-gradient);
+      background-size: 32px 32px, 32px 32px, auto;
+    }
+
+    .ekg-background-line {
+      display: none;
+    }
+
+    .dashboard-container {
+      max-width: 1520px;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    @media (min-width: 1180px) {
+      .dashboard-container {
+        grid-template-columns: minmax(0, 1fr) 340px;
+      }
+    }
+
+    .main-content,
+    .sidebar {
+      gap: 1.25rem;
+    }
+
+    .glass-card {
+      border-radius: 16px;
+      border: 1px solid var(--card-border-color);
+      background: var(--card-bg-color);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    .glass-card:hover,
+    .calendar-card:hover,
+    .student-info-card:hover {
+      transform: none;
+      box-shadow: 0 14px 38px rgba(15, 23, 42, 0.1);
+    }
+
+    .main-header-overview {
+      margin-bottom: 0;
+      padding: 1.25rem;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245,249,252,0.96) 58%, rgba(232,244,250,0.9) 100%);
+      border: 1px solid #dbe7f0;
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.09);
+    }
+
+    .header-flex-container {
+      gap: 1.25rem;
+      padding-left: 0;
+      align-items: stretch;
+    }
+
+    .header-content {
+      display: grid;
+      grid-template-columns: minmax(240px, 0.56fr) minmax(620px, 1.44fr);
+      align-items: center;
+      gap: 1.25rem;
+      max-width: none;
+    }
+
+    .school-info {
+      min-height: 112px;
+      margin: 0;
+      padding: 1rem 1.15rem;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #e3ecf4;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+    }
+
+    .school-info:hover,
+    .school-logo:hover {
+      transform: none;
+    }
+
+    .school-logo {
+      width: 64px;
+      height: 64px;
+      padding: 6px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+
+    .school-name {
+      color: #334155;
+      font-size: 1.05rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .app-title-container {
+      text-align: left;
+      padding: 0.25rem 0;
+    }
+
+    .overview-subtitle {
+      margin: 0 0 0.35rem;
+      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .overview-title {
+      margin: 0 0 0.9rem;
+      font-size: clamp(2rem, 2.65vw, 2.55rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+      color: #111827;
+      background: none;
+      -webkit-text-fill-color: currentColor;
+      text-shadow: none;
+      white-space: nowrap;
+    }
+
+    .patient-form {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.8rem 1rem;
+      flex-wrap: wrap;
+    }
+
+    .history-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .history-export-btn,
+    .history-note {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .history-export-btn {
+      color: #ffffff;
+      background: var(--color-bpm);
+      box-shadow: 0 8px 18px rgba(244, 63, 94, 0.22);
+      cursor: pointer;
+    }
+
+    .history-export-btn:hover {
+      background: #e11d48;
+    }
+
+    .history-note {
+      color: #64748b;
+      background: #eef2f7;
+      border: 1px solid #dbe5ee;
+    }
+
+    .history-note--future {
+      color: #0369a1;
+      background: #e0f2fe;
+      border-color: #bae6fd;
+    }
+
+    .heart-rate-container {
+      padding: 0;
+      margin-left: auto;
+      padding-right: 0;
+      min-width: 128px;
+    }
+
+    .heart-rate-circle {
+      width: 108px;
+      height: 108px;
+      margin-right: 0;
+      box-shadow: 0 0 0 10px rgba(244, 63, 94, 0.11), 0 14px 30px rgba(244, 63, 94, 0.12);
+    }
+
+    .heart-rate-inner-circle {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #fb7185 0%, var(--color-bpm) 100%);
+    }
+
+    .heart-rate-inner-circle svg {
+      width: 50px;
+      height: 50px;
+    }
+
+    .metrics-grid {
+      gap: 1rem;
+    }
+
+    .metric-card {
+      min-height: 206px;
+      padding: 1.1rem;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #dfe8f1;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+    }
+
+    .metric-card::before {
+      display: none;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+    }
+
+    .metric-card.active-chart,
+    .metric-card:nth-of-type(2).active-chart,
+    .metric-card:nth-of-type(3).active-chart {
+      transform: none;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+      border-color: currentColor;
+      outline: 3px solid rgba(244, 63, 94, 0.12);
+    }
+
+    .metric-card:nth-of-type(2).active-chart {
+      outline-color: rgba(2, 132, 199, 0.14);
+    }
+
+    .metric-card:nth-of-type(3).active-chart {
+      outline-color: rgba(245, 158, 11, 0.16);
+    }
+
+    .card-header {
+      padding: 0;
+      margin-bottom: 1.2rem;
+      background: transparent;
+      border-bottom: 0;
+      align-items: center;
+    }
+
+    .card-header h2 {
+      margin: 0 0 0.2rem;
+      font-size: 1.02rem;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .card-header .sensor-name {
+      color: #8a99ac;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .metric-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+    }
+
+    .card-body {
+      min-height: 76px;
+      margin-bottom: 1rem;
+      align-items: flex-end;
+    }
+
+    .metric-value {
+      font-size: clamp(2.8rem, 4vw, 4rem);
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .unit {
+      margin-left: 0.35rem;
+      margin-bottom: 0.35rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .card-footer {
+      gap: 0.75rem;
+      min-height: 36px;
+    }
+
+    .status-indicator {
+      padding: 0.42rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .chart-section {
+      height: clamp(340px, 42vh, 480px);
+      padding: 1.25rem;
+      border-radius: 16px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 1rem;
+    }
+
+    .widget-title {
+      margin-bottom: 0.85rem;
+      color: #1f2937;
+      font-size: 1rem;
+      line-height: 1.25;
+    }
+
+    .connection-status-card,
+    .student-info-card,
+    .calendar-card {
+      padding: 1.15rem;
+    }
+
+    .status-bubble {
+      border-radius: 12px;
+      padding: 0.85rem 0.95rem;
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    .save-status-indicator {
+      margin-top: 0.75rem !important;
+      border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+      align-items: flex-start;
+      line-height: 1.3;
+    }
+
+    .student-info-card {
+      margin-bottom: 0;
+      background: #ffffff;
+    }
+
+    .student-info {
+      padding: 1rem;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .student-avatar-wrap {
+      background: linear-gradient(135deg, #38bdf8 0%, #f43f5e 100%);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .student-avatar {
+      width: 88px;
+      height: 88px;
+    }
+
+    .student-details h4 {
+      font-size: 1.05rem;
+    }
+
+    .student-details .student-id,
+    .student-details .student-school {
+      font-size: 0.8rem;
+    }
+
+    .calendar-widget {
+      padding: 0;
+    }
+
+    .calendar-header {
+      margin-bottom: 0.85rem;
+    }
+
+    .calendar-grid {
+      gap: 0.35rem;
+    }
+
+    .calendar-day {
+      display: grid;
+      place-items: center;
+      min-height: 34px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+    }
+
+    .calendar-day.selected {
+      background: #f43f5e;
+      border-color: #f43f5e;
+      box-shadow: 0 8px 18px rgba(244, 63, 94, 0.22);
+    }
+
+    .calendar-day.today:not(.selected) {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .toast {
+      border-radius: 14px;
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
+    }
+
+    @media (max-width: 1180px) {
+      .sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .calendar-card {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 920px) {
+      body {
+        padding: 0.85rem;
+      }
+
+      .header-flex-container,
+      .header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .app-title-container {
+        text-align: center;
+      }
+
+      .overview-title {
+        white-space: normal;
+      }
+
+      .patient-form {
+        justify-content: center;
+      }
+
+      .school-info {
+        justify-content: center;
+      }
+
+      .heart-rate-container {
+        align-self: center;
+        margin-top: 0.25rem;
+      }
+
+      .sidebar {
+        grid-template-columns: 1fr;
+      }
+
+      .calendar-card {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .main-header-overview,
+      .metric-card,
+      .chart-section,
+      .connection-status-card,
+      .student-info-card,
+      .calendar-card {
+        border-radius: 14px;
+      }
+
+      .school-info {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .overview-title {
+        font-size: 1.75rem;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-footer {
+        flex-wrap: wrap;
+      }
+
+      .chart-section {
+        height: 300px;
+      }
+    }
+
     /* === Tôn trọng prefers-reduced-motion === */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -1425,7 +1939,7 @@ const useCountUp = (target, duration = 500) => {
 // Helper: Export records to CSV and trigger download
 const exportToCSV = (records, filename = 'lich_su_benh_nhan.xlsx', patientNameParam = '') => {
   if (!records || records.length === 0) {
-    showToast('Không có dữ liệu để xuất!', 'warning');
+    showToast('Chưa có bản ghi sức khỏe để xuất báo cáo.', 'warning');
     return;
   }
 
@@ -1789,7 +2303,10 @@ function App() {
   const [temperature, setTemperature] = useState(0);
   const [activeChart, setActiveChart] = useState('bpm');
   // Patient Name State (Persisted in LocalStorage)
-  const [patientName, setPatientName] = useState(() => localStorage.getItem('patientName') || 'Nguyễn Văn A');
+  const [patientName, setPatientName] = useState(() => {
+    const savedName = localStorage.getItem('patientName') || '';
+    return savedName === 'Nguyễn Văn A' ? '' : savedName;
+  });
   useEffect(() => localStorage.setItem('patientName', patientName), [patientName]);
   
   // Patient Age State (Persisted in LocalStorage)
@@ -1804,6 +2321,7 @@ function App() {
   const [spo2ChartData, setSpo2ChartData] = useState(createInitialChartData('spo2'));
   const [tempChartData, setTempChartData] = useState(createInitialChartData('temp'));
   const [connectionStatus, setConnectionStatus] = useState('Đang kết nối...');
+  const [isEsp32Online, setIsEsp32Online] = useState(false);
 
   // Thêm states mới
   const [showAlert, setShowAlert] = useState(false);
@@ -1852,6 +2370,9 @@ function App() {
   const todayLocal = new Date();
   const todayLocalMidnight = new Date(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate());
   const [selectedDate, setSelectedDate] = useState(todayLocalMidnight);
+  const isSelectedFutureDate = selectedDate > todayLocalMidnight;
+  const hasHistoricalReadings = historicalReadings.length > 0;
+  const canStartMeasurement = viewMode === 'live' && isEsp32Online;
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // === REFs ĐỂ LƯU DỮ LIỆU ===
@@ -2076,11 +2597,32 @@ function App() {
     if (!db) return;
 
     setConnectionStatus('Đang chờ dữ liệu từ Firebase...');
+    setIsEsp32Online(false);
     
     // Trỏ tới đúng Document mà ESP32 vừa nạp lên
     const docRef = doc(db, 'realtime_data', 'esp32_sensor');
     
     let offlineTimeoutId;
+    let isFirstSnapshot = true;
+
+    const markEsp32Offline = () => {
+      setIsEsp32Online(false);
+      setConnectionStatus('Thiết bị ESP32 đang tắt/Mất mạng!');
+      setIsMeasuring(false);
+      setIsMeasuringBpm(false);
+      setIsMeasuringSpo2(false);
+      setIsMeasuringTemp(false);
+      setMeasurementStartTime(null);
+      setSaveStatus('waiting');
+      if (viewMode === 'live') {
+        setBpm(0);
+        setSpo2(0);
+        setTemperature(0);
+        bpmRef.current = 0;
+        targetSpo2Ref.current = 0;
+        targetTempRef.current = 0;
+      }
+    };
 
     // Mở luồng lắng nghe thời gian thực của Firebase
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
@@ -2095,17 +2637,27 @@ function App() {
         // Xóa bộ đếm ngược mất kết nối mỗi khi Firebase có tín hiệu cập nhật
         clearTimeout(offlineTimeoutId);
 
-        // Kích hoạt lại bộ đếm: Sau 5 giây nếu Firebase không có dữ liệu mới -> rớt mạng
-        offlineTimeoutId = setTimeout(() => {
-          setConnectionStatus('Thiết bị ESP32 đang tắt/Mất mạng!');
+        if (isFirstSnapshot) {
+          isFirstSnapshot = false;
+          setIsEsp32Online(false);
+          setConnectionStatus('Đang kết nối!');
           if (viewMode === 'live') {
             setBpm(0);
             setSpo2(0);
             setTemperature(0);
+            bpmRef.current = 0;
+            targetSpo2Ref.current = 0;
+            targetTempRef.current = 0;
           }
-        }, 5000);
+          offlineTimeoutId = setTimeout(markEsp32Offline, 5000);
+          return;
+        }
+
+        // Kích hoạt lại bộ đếm: Sau 5 giây nếu Firebase không có dữ liệu mới -> rớt mạng
+        offlineTimeoutId = setTimeout(markEsp32Offline, 5000);
 
         lastMessageTsRef.current = Date.now();
+        setIsEsp32Online(true);
         setConnectionStatus('Đã kết nối ESP32 (Online)');
 
         // Lưu buffer lưu trữ lịch sử
@@ -2142,16 +2694,20 @@ function App() {
           }
         }
       } else {
+        isFirstSnapshot = false;
+        setIsEsp32Online(false);
         setConnectionStatus('Chưa có dữ liệu cảm biến mới');
       }
     }, (error) => {
       console.error("Lỗi nhận Firebase Realtime:", error);
+      setIsEsp32Online(false);
       setConnectionStatus('Mất kết nối với Firebase');
     });
 
     // Cleanup: Ngắt kết nối Firebase khi chuyển giao diện
     return () => {
       unsubscribe();
+      clearTimeout(offlineTimeoutId);
     };
   }, [viewMode]); // 🔧 Chỉ reconnect khi viewMode thay đổi, dùng ref cho saveToFirestore
 
@@ -2526,6 +3082,13 @@ function App() {
         return;
       }
 
+      const currentDay = new Date();
+      const currentDayMidnight = new Date(currentDay.getFullYear(), currentDay.getMonth(), currentDay.getDate());
+      if (selectedDate > currentDayMidnight) {
+        updateUIWithHistoricalData(null);
+        return;
+      }
+
       console.log(`Đang tải dữ liệu cho ngày: ${getDocId(selectedDate)}`);
       setIsLoadingHistory(true);
       // Reset all chart states (we maintain separate states for each chart)
@@ -2560,12 +3123,23 @@ function App() {
   }, [selectedDate, viewMode, userId, activeChart]);
 
   // === 12. HÀM XỬ LÝ SỰ KIỆN ===
-  // Handler bắt đầu/dừng đo
-  const startMeasurement = () => {
+  const validateReadyToMeasure = () => {
     if (!patientName.trim()) {
       showToast('Vui lòng nhập tên bệnh nhân trước!', 'warning');
-      return;
+      return false;
     }
+
+    if (!canStartMeasurement) {
+      showToast('Chưa nhận được dữ liệu từ ESP32. Hãy bật thiết bị và chờ trạng thái Online.', 'warning');
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handler bắt đầu/dừng đo
+  const startMeasurement = () => {
+    if (!validateReadyToMeasure()) return;
     setIsMeasuring(true);
     // Khi đo tổng, tắt các đo riêng lẻ
     setIsMeasuringBpm(false);
@@ -2585,10 +3159,7 @@ function App() {
 
   // Hàm đo riêng từng chỉ số
   const startMeasuringBpm = () => {
-    if (!patientName.trim()) {
-      showToast('Vui lòng nhập tên bệnh nhân trước!', 'warning');
-      return;
-    }
+    if (!validateReadyToMeasure()) return;
     // Tắt đo tổng khi đo riêng
     if (isMeasuring) setIsMeasuring(false);
     setIsMeasuringBpm(true);
@@ -2608,10 +3179,7 @@ function App() {
   };
 
   const startMeasuringSpo2 = () => {
-    if (!patientName.trim()) {
-      showToast('Vui lòng nhập tên bệnh nhân trước!', 'warning');
-      return;
-    }
+    if (!validateReadyToMeasure()) return;
     // Tắt đo tổng khi đo riêng
     if (isMeasuring) setIsMeasuring(false);
     setIsMeasuringSpo2(true);
@@ -2630,10 +3198,7 @@ function App() {
   };
 
   const startMeasuringTemp = () => {
-    if (!patientName.trim()) {
-      showToast('Vui lòng nhập tên bệnh nhân trước!', 'warning');
-      return;
-    }
+    if (!validateReadyToMeasure()) return;
     // Tắt đo tổng khi đo riêng
     if (isMeasuring) setIsMeasuring(false);
     setIsMeasuringTemp(true);
@@ -2665,6 +3230,7 @@ function App() {
 
     const todayStr = getDocId(new Date());
     const selectedStr = getDocId(date);
+    const selectedIsFuture = normalized > new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 
     if (todayStr === selectedStr) {
       console.log("Ngày hôm nay - chuyển về chế độ LIVE");
@@ -2686,6 +3252,15 @@ function App() {
           console.error('Lỗi khi tải dữ liệu:', error);
         }
       }
+    } else if (selectedIsFuture) {
+      console.log("Ngày tương lai - chưa có dữ liệu đo");
+      setViewMode('historical');
+      setHistoricalReadings([]);
+      setShowHistorical(false);
+      setBpmChartData(createHistoricalChart([], 'bpm'));
+      setSpo2ChartData(createHistoricalChart([], 'spo2'));
+      setTempChartData(createHistoricalChart([], 'temp'));
+      showToast('CHƯA TỚI NGÀY ĐO!', 'info');
     } else {
       console.log("Chuyển sang chế độ LỊCH SỬ");
       setViewMode('historical');
@@ -2807,37 +3382,29 @@ function App() {
 
                 {/* App title */}
                 <div className="app-title-container">
-                  <p className="overview-subtitle">
-                    {viewMode === 'live'
-                      ? 'TỔNG QUAN'
-                      : <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  {viewMode !== 'live' && (
+                    <div className="overview-subtitle">
+                      <div className="history-heading">
                         <span>DỮ LIỆU NGÀY: {selectedDate.toLocaleDateString('vi-VN')}</span>
-                        <button
-                          onClick={() => exportToCSV(historicalReadings, `BaoCao_SucKhoe_${selectedDate.toLocaleDateString('vi-VN').replace(/\//g, '-')}.xlsx`, patientName)}
-                          style={{
-                            padding: '0.4rem 0.8rem',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            color: 'white',
-                            background: 'var(--color-bpm)',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-                          }}
-                        >
-                          📥 Xuất Excel
-                        </button>
+                        {isSelectedFutureDate ? (
+                          <span className="history-note history-note--future">CHƯA TỚI NGÀY ĐO!</span>
+                        ) : hasHistoricalReadings ? (
+                          <button
+                            className="history-export-btn"
+                            onClick={() => exportToCSV(historicalReadings, `BaoCao_SucKhoe_${selectedDate.toLocaleDateString('vi-VN').replace(/\//g, '-')}.xlsx`, patientName)}
+                          >
+                            📥 Xuất Excel
+                          </button>
+                        ) : (
+                          <span className="history-note">Chưa có dữ liệu</span>
+                        )}
                       </div>
-                    }
-                  </p>
+                    </div>
+                  )}
                   <h1 className="overview-title">Trung Tâm Giám Sát Sức Khỏe</h1>
 
                   {/* Patient Name Input với Start/Stop */}
-                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+                  <div className="patient-form">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <span style={{ fontSize: '1.1rem', color: 'var(--text-color-light)' }}>Bệnh nhân:</span>
                       <input
@@ -2852,15 +3419,15 @@ function App() {
                           fontWeight: '600',
                           color: 'var(--text-color)',
                           fontSize: '1.1rem',
-                          width: '200px',
+                          width: '210px',
                           outline: 'none',
                           fontFamily: 'inherit',
                           textAlign: 'center',
                           opacity: isMeasuring ? 0.8 : 1,
                           cursor: isMeasuring ? 'not-allowed' : 'text'
                         }}
-                        title={isMeasuring ? "Đang đo - không thể sửa" : "Nhập tên và ấn Enter để bắt đầu đo"}
-                        placeholder="Nhập tên và ấn Enter..."
+                        title={isMeasuring ? "Đang đo - không thể sửa" : "Nhập tên bệnh nhân"}
+                        placeholder="Nguyễn Văn A"
                       />
                     </div>
                     
@@ -2910,15 +3477,15 @@ function App() {
                           fontWeight: '600',
                           color: 'var(--text-color)',
                           fontSize: '1rem',
-                          width: '70px',
+                          width: '108px',
                           outline: 'none',
                           fontFamily: 'inherit',
                           textAlign: 'center',
                           opacity: isMeasuring ? 0.8 : 1,
                           cursor: isMeasuring ? 'not-allowed' : 'text'
                         }}
-                        title={isMeasuring ? "Đang đo - không thể sửa" : "Nhập tuổi"}
-                        placeholder="Tuổi"
+                        title={isMeasuring ? "Đang đo - không thể sửa" : "Chọn tuổi"}
+                        placeholder="Chọn tuổi"
                       />
                     </div>
                     
@@ -2926,21 +3493,28 @@ function App() {
                       <>
                         <button
                           onClick={isMeasuring ? stopMeasurement : startMeasurement}
+                          disabled={!isMeasuring && !canStartMeasurement}
+                          title={canStartMeasurement || isMeasuring ? '' : 'Chưa nhận dữ liệu từ ESP32'}
                           style={{
                             padding: '0.5rem 1rem',
                             fontSize: '0.9rem',
                             fontWeight: '600',
                             color: 'white',
-                            background: isMeasuring ? 'linear-gradient(90deg, #dc3545, #c82333)' : 'linear-gradient(90deg, #28a745, #218838)',
+                            background: isMeasuring
+                              ? 'linear-gradient(90deg, #dc3545, #c82333)'
+                              : canStartMeasurement
+                                ? 'linear-gradient(90deg, #28a745, #218838)'
+                                : 'linear-gradient(90deg, #94a3b8, #64748b)',
                             border: 'none',
                             borderRadius: '8px',
-                            cursor: 'pointer',
+                            cursor: (!isMeasuring && !canStartMeasurement) ? 'not-allowed' : 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '5px',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             transition: 'all 0.3s ease',
-                            fontFamily: 'inherit'
+                            fontFamily: 'inherit',
+                            opacity: (!isMeasuring && !canStartMeasurement) ? 0.72 : 1
                           }}
                           onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                           onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -3079,18 +3653,25 @@ function App() {
                       e.stopPropagation();
                       isMeasuringBpm ? stopMeasuringBpm() : startMeasuringBpm();
                     }}
+                    disabled={!isMeasuringBpm && !canStartMeasurement}
+                    title={canStartMeasurement || isMeasuringBpm ? '' : 'Chưa nhận dữ liệu từ ESP32'}
                     style={{
                       padding: '0.4rem 0.8rem',
                       fontSize: '0.8rem',
                       fontWeight: '600',
                       color: 'white',
-                      background: isMeasuringBpm ? 'linear-gradient(90deg, #dc3545, #c82333)' : 'linear-gradient(90deg, #ff4d6d, #ff3355)',
+                      background: isMeasuringBpm
+                        ? 'linear-gradient(90deg, #dc3545, #c82333)'
+                        : canStartMeasurement
+                          ? 'linear-gradient(90deg, #ff4d6d, #ff3355)'
+                          : 'linear-gradient(90deg, #94a3b8, #64748b)',
                       border: 'none',
                       borderRadius: '6px',
-                      cursor: 'pointer',
+                      cursor: (!isMeasuringBpm && !canStartMeasurement) ? 'not-allowed' : 'pointer',
                       boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
                       transition: 'all 0.2s ease',
-                      fontFamily: 'inherit'
+                      fontFamily: 'inherit',
+                      opacity: (!isMeasuringBpm && !canStartMeasurement) ? 0.72 : 1
                     }}
                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -3136,18 +3717,25 @@ function App() {
                       e.stopPropagation();
                       isMeasuringSpo2 ? stopMeasuringSpo2() : startMeasuringSpo2();
                     }}
+                    disabled={!isMeasuringSpo2 && !canStartMeasurement}
+                    title={canStartMeasurement || isMeasuringSpo2 ? '' : 'Chưa nhận dữ liệu từ ESP32'}
                     style={{
                       padding: '0.4rem 0.8rem',
                       fontSize: '0.8rem',
                       fontWeight: '600',
                       color: 'white',
-                      background: isMeasuringSpo2 ? 'linear-gradient(90deg, #dc3545, #c82333)' : 'linear-gradient(90deg, #00b4d8, #0096c7)',
+                      background: isMeasuringSpo2
+                        ? 'linear-gradient(90deg, #dc3545, #c82333)'
+                        : canStartMeasurement
+                          ? 'linear-gradient(90deg, #00b4d8, #0096c7)'
+                          : 'linear-gradient(90deg, #94a3b8, #64748b)',
                       border: 'none',
                       borderRadius: '6px',
-                      cursor: 'pointer',
+                      cursor: (!isMeasuringSpo2 && !canStartMeasurement) ? 'not-allowed' : 'pointer',
                       boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
                       transition: 'all 0.2s ease',
-                      fontFamily: 'inherit'
+                      fontFamily: 'inherit',
+                      opacity: (!isMeasuringSpo2 && !canStartMeasurement) ? 0.72 : 1
                     }}
                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -3193,18 +3781,25 @@ function App() {
                       e.stopPropagation();
                       isMeasuringTemp ? stopMeasuringTemp() : startMeasuringTemp();
                     }}
+                    disabled={!isMeasuringTemp && !canStartMeasurement}
+                    title={canStartMeasurement || isMeasuringTemp ? '' : 'Chưa nhận dữ liệu từ ESP32'}
                     style={{
                       padding: '0.4rem 0.8rem',
                       fontSize: '0.8rem',
                       fontWeight: '600',
                       color: 'white',
-                      background: isMeasuringTemp ? 'linear-gradient(90deg, #dc3545, #c82333)' : 'linear-gradient(90deg, #ffa500, #ff8c00)',
+                      background: isMeasuringTemp
+                        ? 'linear-gradient(90deg, #dc3545, #c82333)'
+                        : canStartMeasurement
+                          ? 'linear-gradient(90deg, #ffa500, #ff8c00)'
+                          : 'linear-gradient(90deg, #94a3b8, #64748b)',
                       border: 'none',
                       borderRadius: '6px',
-                      cursor: 'pointer',
+                      cursor: (!isMeasuringTemp && !canStartMeasurement) ? 'not-allowed' : 'pointer',
                       boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
                       transition: 'all 0.2s ease',
-                      fontFamily: 'inherit'
+                      fontFamily: 'inherit',
+                      opacity: (!isMeasuringTemp && !canStartMeasurement) ? 0.72 : 1
                     }}
                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
