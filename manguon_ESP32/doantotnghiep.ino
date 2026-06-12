@@ -21,7 +21,7 @@ const char* WIFI_PASS = "99999999";
 #define PROJECT_ID "du-lieu-cb"
 
 #define WIFI_BOOT_TIMEOUT 6000 
-#define RECONNECT_INTERVAL 2000 
+#define RECONNECT_INTERVAL 3000 
 #define FIREBASE_INIT_DELAY 1000
 
 // ==========================================
@@ -46,7 +46,7 @@ const char* WIFI_PASS = "99999999";
 #define FINGER_THRESHOLD 50000 
 #define FIREBASE_SEND_INTERVAL 250
 #define TEMP_READ_INTERVAL 1000
-#define TEMP_CONVERSION_DELAY 120
+#define TEMP_CONVERSION_DELAY 800
 #define BUTTON_DEBOUNCE_MS 50
 #define BUTTON_ACTION_GUARD_MS 350
 #define MIN_PEAK_INTERVAL_MS 300
@@ -264,7 +264,7 @@ void setup() {
   setupWiFiBoot();
   setupMAX30102();
   sensors.begin();
-  sensors.setResolution(9);
+  sensors.setResolution(12);
   sensors.setWaitForConversion(false);
   sensors.requestTemperatures();
   lastTempRequest = millis();
@@ -549,7 +549,7 @@ void updateOLED() {
     for (int i = 1; i < WAVE_WIDTH; i++) {
         display.drawLine( i - 1, waveBuffer[(waveX + i - 1) % WAVE_WIDTH], i, waveBuffer[(waveX + i) % WAVE_WIDTH], SSD1306_WHITE);
     }
-                                                                          
+    
     display.fillRect(0, 0, 128, 10, SSD1306_BLACK);
     display.setTextSize(1); display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);  display.print(F("HR: ")); display.print(finalBPM); display.print(F(" bpm"));
