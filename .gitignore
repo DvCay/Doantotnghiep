@@ -20,5 +20,11 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
+
+# Visual Studio / WinForms
+.vs/
+bin/
+obj/
+*.user
+*.cache

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+ <PropertyGroup>
+ <OutputType>WinExe</OutputType>
+ <TargetFramework>net48</TargetFramework>
+ <UseWindowsForms>true</UseWindowsForms>
+ <ImplicitUsings>disable</ImplicitUsings>
+ </PropertyGroup>
+ <ItemGroup>
+ <PackageReference Include="LiveCharts" Version="0.9.7" />
+ <PackageReference Include="LiveCharts.WinForms" Version="0.9.7" />
+ <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
+ <Reference Include="System.Windows.Forms.DataVisualization" />
+ </ItemGroup>
+ <!-- Copy the repo public image into the WinForms output folder -->
+ <ItemGroup>
+ <Content Include="..\public\utc-logo.png">
+ <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+ </Content>
+ </ItemGroup>
+</Project>
