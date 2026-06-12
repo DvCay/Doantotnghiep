@@ -2011,7 +2011,7 @@ const exportToCSV = (records, filename = 'lich_su_benh_nhan.xlsx', patientNamePa
     { wch: 18 }, // BPM
     { wch: 15 }, // SpO2
     { wch: 20 }, // Nhiệt độ
-    { wch: 18 }  // Trạng thái
+    { wch: 30 }  // Trạng thái
   ];
 
   // Định dạng chiều cao hàng (row height)
@@ -2101,7 +2101,7 @@ const exportToCSV = (records, filename = 'lich_su_benh_nhan.xlsx', patientNamePa
   const headerStyle = {
     font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
     fill: { fgColor: { rgb: "4472C4" } },
-    alignment: { horizontal: "center", vertical: "center" },
+    alignment: { horizontal: "center", vertical: "center", wrapText: true },
     border: {
       top: { style: "medium", color: { rgb: "000000" } },
       bottom: { style: "medium", color: { rgb: "000000" } },
@@ -2122,7 +2122,7 @@ const exportToCSV = (records, filename = 'lich_su_benh_nhan.xlsx', patientNamePa
 
   // Styles cho dòng trạng thái cần theo dõi
   const warningStyle = {
-    alignment: { horizontal: "center", vertical: "center" },
+    alignment: { horizontal: "center", vertical: "center", wrapText: true },
     border: borderStyle,
     fill: { fgColor: { rgb: "FFF3CD" } }, // Vàng nhạt
     font: { bold: true, color: { rgb: "856404" } }

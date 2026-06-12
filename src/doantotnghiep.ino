@@ -549,7 +549,7 @@ void updateOLED() {
     for (int i = 1; i < WAVE_WIDTH; i++) {
         display.drawLine( i - 1, waveBuffer[(waveX + i - 1) % WAVE_WIDTH], i, waveBuffer[(waveX + i) % WAVE_WIDTH], SSD1306_WHITE);
     }
-    
+                                                                          
     display.fillRect(0, 0, 128, 10, SSD1306_BLACK);
     display.setTextSize(1); display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);  display.print(F("HR: ")); display.print(finalBPM); display.print(F(" bpm"));
