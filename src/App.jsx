@@ -122,9 +122,9 @@ const createInitialChartData = (type) => {
         if (!chartArea) return 'rgba(255, 159, 28, 0.1)';
         
         const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-        gradient.addColorStop(0, 'rgba(0, 180, 216, 0.15)');    // Blue at bottom (<35°C Hypothermia)
-        gradient.addColorStop(0.4, 'rgba(40, 167, 69, 0.15)');  // Green (35-37°C Normal)
-        gradient.addColorStop(0.6, 'rgba(255, 193, 7, 0.2)');   // Yellow (>37°C Fever)
+        gradient.addColorStop(0, 'rgba(0, 180, 216, 0.15)');    // Blue at bottom (<36°C Hypothermia)
+        gradient.addColorStop(0.48, 'rgba(40, 167, 69, 0.15)'); // Green (36.1-37.2°C Normal)
+        gradient.addColorStop(0.72, 'rgba(255, 193, 7, 0.2)');  // Yellow (37.5-38°C Mild fever)
         gradient.addColorStop(1, 'rgba(220, 53, 69, 0.25)');    // Red at top (High Fever)
         return gradient;
       },
@@ -136,9 +136,10 @@ const createInitialChartData = (type) => {
         // Dynamic color based on temperature zones
         borderColor: (ctx) => {
           const value = ctx.p1.parsed.y;
-          if (value < 35) return 'rgba(0, 180, 216, 0.9)';     // Blue: Hypothermia
-          if (value <= 37) return 'rgba(40, 167, 69, 0.9)';    // Green: Normal
-          return 'rgba(220, 53, 69, 0.9)';                      // Red: High temperature
+          if (value < 36) return 'rgba(0, 180, 216, 0.9)';       // Blue: Hypothermia
+          if (value >= 36.1 && value <= 37.2) return 'rgba(40, 167, 69, 0.9)'; // Green: Normal
+          if (value <= 38) return 'rgba(255, 193, 7, 0.9)';      // Yellow: Monitor / mild fever
+          return 'rgba(220, 53, 69, 0.9)';                       // Red: Moderate/high fever
         }
       }
     };
@@ -226,8 +227,9 @@ const createChartOptions = (isLoading, viewMode, activeChart) => {
             stepSize: 2,
             // Color zones
             callback: function(value) {
-              if (value === 35) return value + '°C (Hạ nhiệt)';
-              if (value === 37) return value + '°C (Bình thường)';
+              if (value === 36) return value + '°C (Hạ thân nhiệt)';
+              if (value === 38) return value + '°C (Sốt nhẹ)';
+              if (value === 39) return value + '°C (Sốt cao)';
               return value + '°C';
             }
           }, 
@@ -235,13 +237,14 @@ const createChartOptions = (isLoading, viewMode, activeChart) => {
           grid: {
             color: (context) => {
               const value = context.tick.value;
-              if (value === 37) return 'rgba(40, 167, 69, 0.4)'; // Green: Normal upper threshold
-              if (value === 35) return 'rgba(0, 180, 216, 0.4)';   // Blue: Hypothermia
+              if (value === 36) return 'rgba(0, 180, 216, 0.4)';   // Blue: Hypothermia threshold
+              if (value === 38) return 'rgba(255, 193, 7, 0.4)';   // Yellow: Mild fever threshold
+              if (value === 39) return 'rgba(220, 53, 69, 0.4)';   // Red: High fever threshold
               return 'rgba(0, 0, 0, 0.05)';
             },
             lineWidth: (context) => {
               const value = context.tick.value;
-              return (value === 35 || value === 37) ? 2 : 1;
+              return (value === 36 || value === 38 || value === 39) ? 2 : 1;
             }
           }
         } 
@@ -271,9 +274,12 @@ const createChartOptions = (isLoading, viewMode, activeChart) => {
                 return `SpO₂: ${value.toFixed(1)}%${zone}`;
               } else if (activeChart === 'temp') {
                 let zone = '';
-                if (value < 35) zone = ' - Hạ nhiệt';
-                else if (value <= 37) zone = ' - Bình thường';
-                else zone = ' - Nhiệt độ cao';
+                if (value < 36) zone = ' - Hạ thân nhiệt';
+                else if (value >= 36.1 && value <= 37.2) zone = ' - Bình thường';
+                else if (value < 37.5) zone = ' - Cần theo dõi';
+                else if (value <= 38) zone = ' - Sốt nhẹ';
+                else if (value <= 39) zone = ' - Sốt vừa';
+                else zone = ' - Sốt cao';
                 return `Nhiệt độ: ${value.toFixed(1)}°C${zone}`;
               }
             }
@@ -1966,8 +1972,8 @@ const exportToCSV = (records, filename = 'lich_su_benh_nhan.xlsx', patientNamePa
     const isBpmWarning = bpm > 0 && ((bpm >= 50 && bpm < 60) || (bpm > 100 && bpm <= 120));
     const isSpo2Critical = spo2 > 0 && spo2 < 90;
     const isSpo2Warning = spo2 > 0 && (spo2 >= 90 && spo2 < 95);
-    const isTempCritical = temp > 0 && (temp < 35 || temp > 37);
-    const isTempWarning = false;
+    const isTempCritical = temp > 0 && (temp < 36 || temp > 38);
+    const isTempWarning = temp > 0 && ((temp >= 36 && temp < 36.1) || (temp > 37.2 && temp <= 38));
 
     // Kiểm tra xem có chỉ số nào được đo không
     const hasMeasurement = bpm > 0 || spo2 > 0 || temp > 0;
@@ -2149,8 +2155,8 @@ const exportToCSV = (records, filename = 'lich_su_benh_nhan.xlsx', patientNamePa
     const isBpmWarning = bpm > 0 && ((bpm >= 50 && bpm < 60) || (bpm > 100 && bpm <= 120));
     const isSpo2Critical = spo2 > 0 && spo2 < 90;
     const isSpo2Warning = spo2 > 0 && (spo2 >= 90 && spo2 < 95);
-    const isTempCritical = temp > 0 && (temp < 35 || temp > 37);
-    const isTempWarning = false;
+    const isTempCritical = temp > 0 && (temp < 36 || temp > 38);
+    const isTempWarning = temp > 0 && ((temp >= 36 && temp < 36.1) || (temp > 37.2 && temp <= 38));
 
     // Kiểm tra xem có chỉ số nào được đo không
     const hasMeasurement = bpm > 0 || spo2 > 0 || temp > 0;
@@ -3308,8 +3314,11 @@ function App() {
     let alerts = [];
     if (b > 100 || b < 60) alerts.push(`Nhịp tim bất thường: ${b} BPM`);
     if (s < 95) alerts.push(`SpO₂ thấp: ${s}%`);
-    if (t < 35) alerts.push(`Hạ nhiệt: ${t}°C`);
-    if (t > 37) alerts.push(`Nhiệt độ cao: ${t}°C`);
+    if (t > 0 && t < 36) alerts.push(`Hạ thân nhiệt: ${t}°C`);
+    if (t > 37.2 && t < 37.5) alerts.push(`Nhiệt độ cần theo dõi: ${t}°C`);
+    if (t >= 37.5 && t <= 38) alerts.push(`Sốt nhẹ: ${t}°C`);
+    if (t > 38 && t <= 39) alerts.push(`Sốt vừa: ${t}°C`);
+    if (t > 39) alerts.push(`Sốt cao: ${t}°C`);
 
     if (alerts.length > 0) {
       setAlertMessage(alerts.join(' | '));
@@ -3336,9 +3345,13 @@ function App() {
   };
   const getTempStatus = (t) => {
     if (isLoadingHistory) return { text: '...', className: 'status-warning' };
-    if (t < 35 && t > 0) return { text: 'Nhiệt độ thấp', className: 'status-danger' };
-    if (t >= 35 && t <= 37) return { text: 'Bình thường', className: 'status-normal' };
-    if (t > 37) return { text: 'Nhiệt độ cao', className: 'status-danger' };
+    if (t < 36 && t > 0) return { text: 'Hạ thân nhiệt', className: 'status-danger' };
+    if (t >= 36 && t < 36.1) return { text: 'Cần theo dõi', className: 'status-warning' };
+    if (t >= 36.1 && t <= 37.2) return { text: 'Bình thường', className: 'status-normal' };
+    if (t > 37.2 && t < 37.5) return { text: 'Cần theo dõi', className: 'status-warning' };
+    if (t >= 37.5 && t <= 38) return { text: 'Sốt nhẹ', className: 'status-warning' };
+    if (t > 38 && t <= 39) return { text: 'Sốt vừa', className: 'status-danger' };
+    if (t > 39) return { text: 'Sốt cao', className: 'status-danger' };
     return { text: 'Đang chờ...', className: 'status-warning' };
   };
 
