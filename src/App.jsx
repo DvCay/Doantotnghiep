@@ -2011,7 +2011,7 @@ const exportToCSV = (records, filename = 'lich_su_benh_nhan.xlsx', patientNamePa
     { wch: 18 }, // BPM
     { wch: 15 }, // SpO2
     { wch: 20 }, // Nhiệt độ
-    { wch: 30 }  // Trạng thái
+    { wch: 38 }  // Trạng thái
   ];
 
   // Định dạng chiều cao hàng (row height)
