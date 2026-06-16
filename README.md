@@ -78,3 +78,9 @@ t_us,IR,Red,Vt,BPM,SpO2
 - React + Vite
 - Chart.js
 - xlsx-js-style
+
+## Bản Quyền
+
+© 2026 Dang Van Cay. All rights reserved.
+
+Dự án này phục vụ mục đích đồ án tốt nghiệp. Không được sao chép, sử dụng lại hoặc phân phối khi chưa có sự cho phép của tác giả.
